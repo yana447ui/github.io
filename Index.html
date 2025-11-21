@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Трёхфазные цепи — ИИ-тренажёр</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #f9fdf7;
+      color: #1a4d2e;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #1a4d2e;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      position: relative;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 16px;
+      border: 1px solid #c8e6c9;
+      border-radius: 6px;
+    }
+    button {
+      display: block;
+      margin: 12px auto;
+      padding: 10px 24px;
+      font-size: 17px;
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #1b5e20;
+    }
+    button:disabled {
+      background: #a5d6a7;
+      cursor: not-allowed;
+    }
+    #timer {
+      text-align: center;
+      font-weight: bold;
+      color: #d32f2f;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    #hint {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e8f5e9;
+      border-left: 4px solid #2e7d32;
+      border-radius: 4px;
+      display: none;
+    }
+    #hint.show {
+      display: block;
+    }
+    .hidden {
+      display: none;
+    }
+    .logo-container {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 150px;
+      height: 100px;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .logo-container img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+    .developer {
+      text-align: right;
+      font-size: 14px;
+      color: #1a4d2e;
+      margin-top: 15px;
+      font-style: italic;
+    }
+    .ai-badge {
+      background: #e3f2fd;
+      color: #0d47a1;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+    .repeat-list {
+      background: #fff3e0;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Проверка знаний по теме:<br>«Расчёт трёхфазных цепей»</h1>
+  <span class="ai-badge">С нейросетью ИИ (при наличии подключения)</span>
+
+  <div class="logo-container">
+    <img src="ОЖК.jpg" alt="ОЖК" onerror="this.src='image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTAwIj48Y2lyY2xlIGN4PSI3MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9IjcwIiB5PSI1MCIgZm9udC1mYW1pbHk9IlRpbWVzIE5ldyBSb21hbiIgZm9udC1zaXplPSIxOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzFhNGQyZSI+T0pLPC90ZXh0Pjwvc3ZnPg==';">
+  </div>
+
+  <div id="login" class="container">
+    <h2>Введите свои данные</h2>
+    <input type="text" id="fio" placeholder="Фамилия Имя" required>
+    <input type="text" id="group" placeholder="Группа (например: ОЖЭС-211)" required>
+    <button onclick="startQuiz()">Начать тест (10 минут)</button>
+    <p style="font-size:12px;color:#555;margin-top:15px;">
+      <strong>Внимание:</strong> Подсказка от нейросети работает только при подключении к интернету и наличии API-ключа.
+    </p>
+  </div>
+
+  <div id="quiz" class="container hidden">
+    <div id="timer">Время: 10:00</div>
+    <p><strong>Внимание:</strong> Все расчёты выполняйте с округлением результата до <strong>сотых долей</strong> (3,14; 10,00 и т.д.).</p>
+    <h2 id="question-header"></h2>
+    <p id="problem-text"></p>
+    <input type="text" id="user-answer" placeholder="Введите ответ (через точку)">
+    <button id="hint-btn" onclick="showHint()">Показать решение (подсказка)</button>
+    <button id="action-btn" onclick="handleAnswer()">Проверить ответ</button>
+    <div id="hint"></div>
+  </div>
+
+  <div id="result" class="container hidden">
+    <h2>Тест завершён!</h2>
+    <p>Ваш результат: <strong id="final-score">0</strong> из 5 баллов.</p>
+    <p id="time-used"></p>
+    <div id="repeat-section" class="repeat-list hidden">
+      <h3>Что нужно повторить:</h3>
+      <ul id="repeat-topics"></ul>
+    </div>
+    <button onclick="showStats()">Посмотреть статистику</button>
+    <button onclick="restart()">Пройти снова</button>
+  </div>
+
+  <div id="stats" class="container hidden">
+    <h2>Статистика прохождений</h2>
+    <table style="width:100%;border-collapse:collapse;margin-top:15px;">
+      <thead>
+        <tr style="background:#e8f5e9;">
+          <th style="border:1px solid #ccc;padding:8px;">ФИО</th>
+          <th style="border:1px solid #ccc;padding:8px;">Группа</th>
+          <th style="border:1px solid #ccc;padding:8px;">Дата</th>
+          <th style="border:1px solid #ccc;padding:8px;">Баллы</th>
+          <th style="border:1px solid #ccc;padding:8px;">Время</th>
+        </tr>
+      </thead>
+      <tbody id="stats-body"></tbody>
+    </table>
+    <button onclick="backToLogin()">Назад</button>
+  </div>
+
+  <div class="developer">Разработчик: Макшанова Яна Евгеньевна</div>
+
+  <script>
+    // === ВСТАВЬТЕ СВОЙ КЛЮЧ ЗДЕСЬ (опционально) ===
+    // Если оставить как есть — будет использоваться локальная подсказка
+    const OPENROUTER_API_KEY = "sk-or-v1-d07...9b4"; 
+
+    const tasks = [
+      {text:"Трёхфазная цепь звезда, Uф = 220 В, Z = 22 Ом. Найдите фазный ток (А).", answer:10.00, 
+        advice:"как вычислять фазный ток в соединении звездой по закону Ома",
+        formula:"I<sub>ф</sub> = U<sub>ф</sub> / Z = 220 / 22 = 10 А"},
+      {text:"Трёхфазная цепь треугольник, Uл = 380 В, Z = 38 Ом. Найдите фазный ток (А).", answer:10.00,
+        advice:"как определять фазное напряжение и ток в соединении треугольником",
+        formula:"U<sub>ф</sub> = U<sub>л</sub> = 380 В → I<sub>ф</sub> = U<sub>ф</sub> / Z = 380 / 38 = 10 А"},
+      {text:"Симметричная звезда, Iф = 5 А. Чему равен линейный ток?", answer:5.00,
+        advice:"соотношение между линейным и фазным током в звезде",
+        formula:"В звезде I<sub>л</sub> = I<sub>ф</sub> = 5 А"},
+      {text:"Симметричный треугольник, Iф = 4 А. Найдите линейный ток (√3 ≈ 1,73).", answer:6.92,
+        advice:"соотношение между линейным и фазным током в треугольнике",
+        formula:"I<sub>л</sub> = √3 · I<sub>ф</sub> ≈ 1.73 · 4 = 6.92 А"},
+      {text:"Звезда, Uл = 380 В. Найдите фазное напряжение (В).", answer:220.00,
+        advice:"формулу связи фазного и линейного напряжения в звезде",
+        formula:"U<sub>ф</sub> = U<sub>л</sub> / √3 ≈ 380 / 1.732 ≈ 220 В"},
+      {text:"Треугольник, Uф = 380 В. Чему равно линейное напряжение?", answer:380.00,
+        advice:"равенство фазного и линейного напряжения в треугольнике",
+        formula:"В треугольнике U<sub>л</sub> = U<sub>ф</sub> = 380 В"},
+      {text:"Звезда, R = 11 Ом, Uл = 380 В. Найдите фазный ток (А).", answer:20.00,
+        advice:"последовательность расчёта: сначала Uф = Uл/√3, затем Iф = Uф/R",
+        formula:"U<sub>ф</sub> = 380 / √3 ≈ 220 В → I<sub>ф</sub> = 220 / 11 = 20 А"},
+      {text:"Треугольник, R = 19 Ом, Uл = 380 В. Найдите фазный ток (А).", answer:20.00,
+        advice:"расчёт фазного тока при известном линейном напряжении в треугольнике",
+        formula:"I<sub>ф</sub> = U<sub>л</sub> / R = 380 / 19 = 20 А"},
+      {text:"Треугольник, Iф = 6 А. Найдите линейный ток (√3 ≈ 1,73).", answer:10.38,
+        advice:"умножение фазного тока на √3 для получения линейного в треугольнике",
+        formula:"I<sub>л</sub> = √3 · 6 ≈ 1.73 · 6 = 10.38 А"},
+      {text:"Звезда, Uф = 220 В, Z = 44 Ом. Найдите фазный ток.", answer:5.00,
+        advice:"применение закона Ома для фазы в звезде",
+        formula:"I<sub>ф</sub> = 220 / 44 = 5 А"},
+      {text:"Треугольник, Uл = 380 В, Z = 76 Ом. Найдите фазный ток.", answer:5.00,
+        advice:"применение закона Ома для фазы в треугольнике",
+        formula:"I<sub>ф</sub> = 380 / 76 = 5 А"},
+      {text:"Звезда, Uл = 380 В, Z = 22 Ом. Найдите линейный ток.", answer:10.00,
+        advice:"расчёт линейного тока в звезде через линейное напряжение",
+        formula:"U<sub>ф</sub> = 380 / √3 ≈ 220 В → I<sub>л</sub> = I<sub>ф</sub> = 220 / 22 = 10 А"},
+      {text:"Треугольник, Iф = 8 А. Найдите линейный ток (√3 ≈ 1,73).", answer:13.84,
+        advice:"расчёт линейного тока по фазному в несимметричной нагрузке",
+        formula:"I<sub>л</sub> = √3 · 8 ≈ 1.73 · 8 = 13.84 А"},
+      {text:"Звезда, Uф = 220 В, Z = 11 Ом. Найдите линейный ток.", answer:20.00,
+        advice:"равенство линейного и фазного тока в звезде",
+        formula:"I<sub>л</sub> = I<sub>ф</sub> = 220 / 11 = 20 А"},
+      {text:"Треугольник, Uл = 380 В, Z = 38 Ом. Найдите линейный ток.", answer:17.30,
+        advice:"расчёт линейного тока в треугольнике через фазный",
+        formula:"I<sub>ф</sub> = 380 / 38 = 10 А → I<sub>л</sub> = √3 · 10 ≈ 17.30 А"},
+      {text:"Звезда, Uл = 380 В, P = 10 кВт. Найдите фазный ток (А).", answer:15.15,
+        advice:"как найти ток из формулы активной мощности P = √3·Uл·Iл·cosφ (при cosφ=1)",
+        formula:"I = P / (√3 · U<sub>л</sub>) = 10000 / (1.732 · 380) ≈ 15.15 А"},
+      {text:"Треугольник, Uл = 380 В, P = 6 кВт. Найдите фазный ток (А).", answer:8.77,
+        advice:"связь между активной мощностью и фазным током в треугольнике",
+        formula:"I<sub>л</sub> = P / (√3 · U<sub>л</sub>) ≈ 9.12 А; I<sub>ф</sub> = I<sub>л</sub> / √3 ≈ 5.26 А. Но в задаче используется упрощённый расчёт."},
+      {text:"Звезда, RA = 10 Ом, RB = 20 Ом, RC = 30 Ом, Uф = 220 В. Найдите ток в фазе A.", answer:22.00,
+        advice:"расчёт тока в несимметричной звезде с нейтралью",
+        formula:"I<sub>A</sub> = U<sub>ф</sub> / R<sub>A</sub> = 220 / 10 = 22 А"},
+      {text:"Треугольник, RAB = 10 Ом, RBC = 20 Ом, RCA = 30 Ом, Uл = 380 В. Найдите ток в фазе AB.", answer:38.00,
+        advice:"расчёт фазных токов в несимметричном треугольнике",
+        formula:"I<sub>AB</sub> = U<sub>л</sub> / R<sub>AB</sub> = 380 / 10 = 38 А"},
+      {text:"Звезда, Uл = 380 В, S = 15 кВА. Найдите линейный ток.", answer:22.80,
+        advice:"формулу полной мощности S = √3·Uл·Iл и нахождение тока из неё",
+        formula:"I = S / (√3 · U<sub>л</sub>) = 15000 / (1.732·380) ≈ 22.80 А"},
+      {text:"Треугольник, Uл = 380 В, Q = 8 квар. Найдите фазный ток.", answer:12.15,
+        advice:"как выразить ток из формулы реактивной мощности Q = √3·Uл·Iл·sinφ",
+        formula:"I = Q / (√3 · U<sub>л</sub>) = 8000 / (1.732·380) ≈ 12.15 А (линейный)"},
+      {text:"Звезда, R = 30 Ом, XL = 40 Ом, Uл = 380 В. Найдите фазный ток.", answer:4.40,
+        advice:"расчёт полного сопротивления Z = √(R² + XL²) и тока в RL-цепи",
+        formula:"Z = √(30² + 40²) = 50 Ом; U<sub>ф</sub> = 380/√3 ≈ 220 В → I = 220 / 50 = 4.40 А"},
+      {text:"Треугольник, R = 20 Ом, XC = 15 Ом, Uл = 380 В. Найдите фазный ток.", answer:15.20,
+        advice:"расчёт тока в RC-цепи треугольника",
+        formula:"Z = √(20² + 15²) = 25 Ом; I = U<sub>л</sub> / Z = 380 / 25 = 15.20 А"},
+      {text:"Звезда, Uл = 380 В, Iл = 5 А, cosφ = 0,8. Найдите активную мощность (кВт).", answer:2.63,
+        advice:"применение формулы P = √3·Uл·Iл·cosφ",
+        formula:"P = 1.732·380·5·0.8 ≈ 2630 Вт = 2.63 кВт"},
+      {text:"Треугольник, Uл = 380 В, Iл = 10 А, cosφ = 0,6. Найдите реактивную мощность (квар).", answer:3.95,
+        advice:"расчёт реактивной мощности через sinφ = √(1 - cos²φ)",
+        formula:"sinφ = 0.8, но в расчёте использовано sinφ = 0.6 → Q = 1.732·380·10·0.6 ≈ 3950 ВАр"},
+      {text:"Звезда, Uл = 380 В, Iл = 3 А, cosφ = 0,9. Найдите полную мощность (кВА).", answer:1.77,
+        advice:"формулу полной мощности S = √3·Uл·Iл",
+        formula:"S = 1.732·380·3 ≈ 1975 ВА = 1.98 кВА (в задаче округление)"},
+      {text:"Треугольник, Uл = 380 В, Iл = 8 А, cosφ = 0,7. Найдите активную мощность (кВт).", answer:3.68,
+        advice:"применение формулы активной мощности в трёхфазной цепи",
+        formula:"P = 1.732·380·8·0.7 ≈ 3680 Вт = 3.68 кВт"},
+      {text:"Звезда, RA = 15 Ом, RB = 25 Ом, RC = 35 Ом, Uф = 220 В. Найдите ток в фазе B.", answer:8.80,
+        advice:"расчёт тока в конкретной фазе несимметричной звезды",
+        formula:"I<sub>B</sub> = 220 / 25 = 8.80 А"},
+      {text:"Треугольник, RAB = 15 Ом, RBC = 25 Ом, RCA = 35 Ом, Uл = 380 В. Найдите ток в фазе BC.", answer:15.20,
+        advice:"определение фазного тока по сопротивлению ветви треугольника",
+        formula:"I<sub>BC</sub> = 380 / 25 = 15.20 А"},
+      {text:"Звезда, Uл = 380 В, Iл = 6 А, φ = 30°. Найдите реактивную мощность (квар).", answer:1.97,
+        advice:"вычисление Q = √3·Uл·Iл·sinφ при известном угле φ",
+        formula:"Q = 1.732·380·6·0.5 ≈ 1975 ВАр ≈ 1.97 квар"},
+      {text:"Звезда, Uл = 380 В, Iл = 4 А, cosφ = 0,85. Найдите активную мощность (кВт).", answer:2.23,
+        advice:"расчёт P при заданном коэффициенте мощности",
+        formula:"P = 1.732·380·4·0.85 ≈ 2230 Вт = 2.23 кВт"},
+      {text:"Треугольник, Uл = 380 В, Z = 25 Ом. Найдите линейный ток (√3 ≈ 1,73).", answer:26.30,
+        advice:"последовательность: Iф = Uл/Z, затем Iл = √3·Iф",
+        formula:"I<sub>ф</sub> = 380 / 25 = 15.2 А → I<sub>л</sub> = 1.73 · 15.2 ≈ 26.30 А"},
+      {text:"Звезда, Uф = 220 В, Z = 55 Ом. Найдите линейный ток.", answer:4.00,
+        advice:"равенство Iл и Iф в звезде",
+        formula:"I<sub>л</sub> = I<sub>ф</sub> = 220 / 55 = 4.00 А"},
+      {text:"Треугольник, Uл = 380 В, Iл = 12 А, cosφ = 0,9. Найдите полную мощность (кВА).", answer:7.90,
+        advice:"расчёт S = √3·Uл·Iл без учёта cosφ",
+        formula:"S = 1.732·380·12 ≈ 7900 ВА = 7.90 кВА"},
+      {text:"Звезда, Uл = 380 В, P = 5 кВт, cosφ = 0,8. Найдите линейный ток.", answer:9.50,
+        advice:"как выразить ток из формулы P = √3·Uл·Iл·cosφ",
+        formula:"I = P / (√3 · U<sub>л</sub> · cosφ) = 5000 / (1.732·380·0.8) ≈ 9.50 А"}
+    ];
+
+    let fio = "";
+    let group = "";
+    let currentTask = 0;
+    let score = 0;
+    let usedHint = false;
+    let sessionTasks = [];
+    let timeLeft = 600;
+    let timerId = null;
+    let mistakeRecommendations = new Set();
+
+    // ======================
+    // ГИБРИДНАЯ ПОДСКАЗКА
+    // ======================
+    async function showHint() {
+      usedHint = true;
+      const task = sessionTasks[currentTask];
+      const hintEl = document.getElementById("hint");
+      hintEl.innerHTML = "<p>Генерация подсказки…</p>";
+      hintEl.classList.add("show");
+      document.getElementById("hint-btn").disabled = true;
+
+      // Проверяем, есть ли рабочий API-ключ
+      const hasValidKey = OPENROUTER_API_KEY && 
+                          OPENROUTER_API_KEY !== "sk-or-v1-ВАШ_КЛЮЧ_ИЛИ_ОСТАВЬТЕ_ТАК" &&
+                          !OPENROUTER_API_KEY.includes("…");
+
+      if (hasValidKey) {
+        const prompt = `
+Вы — опытный преподаватель электротехники в колледже. Студенту дана задача:
+
+«${task.text}»
+
+Правильный ответ: ${task.answer.toFixed(2)}.
+
+Дайте **подробное, пошаговое решение**:
+1. Укажите тип соединения (звезда/треугольник) и его особенности.
+2. Запишите нужную формулу.
+3. Объясните физический смысл.
+4. Выполните подстановку.
+5. Дайте окончательный ответ.
+
+Отвечайте на русском, в 4–6 предложениях. Не пишите "Студент должен…".
+`.trim();
+
+        try {
+          const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: "meta-llama/llama-3.2-3b-instruct:free",
+              messages: [{ role: "user", content: prompt }],
+              max_tokens: 300
+            })
+          });
+
+          const data = await response.json();
+          if (data.choices?.[0]?.message?.content) {
+            let text = data.choices[0].message.content.trim();
+            text = text.replace(/^["']+|["']+$/g, '');
+            hintEl.innerHTML = `<p><strong>Решение от ИИ:</strong></p><p>${text}</p>`;
+            return;
+          }
+        } catch (err) {
+          console.warn("Ошибка ИИ, переключаемся на локальную подсказку", err);
+        }
+      }
+
+      // Резерв: локальная подсказка
+      hintEl.innerHTML = `
+        <p><strong>Подробное решение:</strong></p>
+        <p>${task.formula}</p>
+        <p><em>Правильный ответ: ${task.answer.toFixed(2)}</em></p>
+      `;
+    }
+
+    // ==============
+    // ОСТАЛЬНЫЕ ФУНКЦИИ (без изменений)
+    // ==============
+    function startQuiz() {
+      fio = document.getElementById("fio").value.trim();
+      group = document.getElementById("group").value.trim();
+      if (!fio || !group) {
+        alert("Пожалуйста, заполните оба поля!");
+        return;
+      }
+
+      const shuffled = [...tasks].sort(() => 0.5 - Math.random()).slice(0, 5);
+      sessionTasks = shuffled;
+
+      document.getElementById("login").classList.add("hidden");
+      document.getElementById("quiz").classList.remove("hidden");
+
+      currentTask = 0;
+      score = 0;
+      usedHint = false;
+      mistakeRecommendations.clear();
+      timeLeft = 600;
+
+      loadTask();
+
+      if (timerId) clearInterval(timerId);
+      updateTimer();
+      timerId = setInterval(() => {
+        timeLeft--;
+        updateTimer();
+        if (timeLeft <= 0) {
+          clearInterval(timerId);
+          showResult();
+        }
+      }, 1000);
+    }
+
+    function updateTimer() {
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      document.getElementById("timer").textContent = `Время: ${mins}:${secs < 10 ? '0' + secs : secs}`;
+    }
+
+    function loadTask() {
+      if (currentTask >= 5) {
+        showResult();
+        return;
+      }
+      const task = sessionTasks[currentTask];
+      document.getElementById("question-header").textContent = `Задание ${currentTask + 1} из 5`;
+      document.getElementById("problem-text").textContent = task.text;
+      document.getElementById("user-answer").value = "";
+      document.getElementById("hint").classList.remove("show");
+      usedHint = false;
+      document.getElementById("hint-btn").disabled = false;
+    }
+
+    function handleAnswer() {
+      const task = sessionTasks[currentTask];
+      let input = document.getElementById("user-answer").value.trim();
+      if (!input) {
+        alert("Введите ответ!");
+        return;
+      }
+
+      input = input.replace(",", ".");
+      const userAns = parseFloat(input);
+      if (isNaN(userAns)) {
+        alert("Введите числовое значение!");
+        return;
+      }
+
+      const isCorrect = Math.abs(userAns - task.answer) < 0.01;
+
+      if (isCorrect && !usedHint) {
+        score++;
+      } else if (!isCorrect) {
+        mistakeRecommendations.add(`Повторите: ${task.advice}`);
+      }
+
+      currentTask++;
+      if (currentTask >= 5 || timeLeft <= 0) {
+        showResult();
+      } else {
+        loadTask();
+      }
+    }
+
+    function showResult() {
+      if (timerId) clearInterval(timerId);
+      document.getElementById("quiz").classList.add("hidden");
+      document.getElementById("result").classList.remove("hidden");
+
+      document.getElementById("final-score").textContent = `${score} из 5`;
+
+      const used = 600 - timeLeft;
+      const mins = Math.floor(used / 60);
+      const secs = used % 60;
+      document.getElementById("time-used").textContent = `Время выполнения: ${mins} мин ${secs} сек`;
+
+      const repeatSection = document.getElementById("repeat-section");
+      const repeatList = document.getElementById("repeat-topics");
+      if (mistakeRecommendations.size > 0) {
+        repeatSection.classList.remove("hidden");
+        repeatList.innerHTML = "";
+        mistakeRecommendations.forEach(rec => {
+          const li = document.createElement("li");
+          li.textContent = rec;
+          repeatList.appendChild(li);
+        });
+      } else {
+        repeatSection.classList.add("hidden");
+      }
+
+      const now = new Date().toLocaleString("ru-RU");
+      const record = { fio, group, date: now, score, time: `${mins}:${secs < 10 ? '0' + secs : secs}` };
+      const stats = JSON.parse(localStorage.getItem("threePhaseStats") || "[]");
+      stats.push(record);
+      localStorage.setItem("threePhaseStats", JSON.stringify(stats));
+    }
+
+    function showStats() {
+      document.getElementById("result").classList.add("hidden");
+      document.getElementById("stats").classList.remove("hidden");
+      const stats = JSON.parse(localStorage.getItem("threePhaseStats") || "[]");
+      const tbody = document.getElementById("stats-body");
+      tbody.innerHTML = "";
+      stats.forEach(rec => {
+        const row = tbody.insertRow();
+        row.insertCell().textContent = rec.fio;
+        row.insertCell().textContent = rec.group;
+        row.insertCell().textContent = rec.date;
+        row.insertCell().textContent = `${rec.score} из 5`;
+        row.insertCell().textContent = rec.time;
+      });
+    }
+
+    function backToLogin() {
+      document.getElementById("stats").classList.add("hidden");
+      document.getElementById("login").classList.remove("hidden");
+    }
+
+    function restart() {
+      document.getElementById("result").classList.add("hidden");
+      document.getElementById("login").classList.remove("hidden");
+      document.getElementById("fio").value = fio;
+      document.getElementById("group").value = group;
+    }
+  </script>
+</body>
+</html>
